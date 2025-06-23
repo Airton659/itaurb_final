@@ -8,6 +8,7 @@ import '../models/contrato_model.dart';
 import '../models/legislacao_model.dart';
 import '../models/licitacao_model.dart';
 import '../widgets/contrato_card_widget.dart';
+import '../widgets/empty_state_widget.dart';
 import '../widgets/legislacao_card_widget.dart';
 import '../widgets/licitacao_card_widget.dart';
 import 'contrato_detalhe_tela.dart';
@@ -38,53 +39,32 @@ class _PesquisaGlobalTelaState extends State<PesquisaGlobalTela> {
     final cache = DataCacheService.instance;
     final query = widget.query.toLowerCase();
 
-    // Filtra Licitações
-    _licitacoesResultados.addAll(cache.licitacoes.where((l) =>
-        l.descObjeto.toLowerCase().contains(query) ||
-        l.numLicitacao.contains(query)));
-
-    // Filtra Contratos
-    _contratosResultados.addAll(cache.contratos.where((c) =>
-        c.descObjeto.toLowerCase().contains(query) ||
-        c.descForn.toLowerCase().contains(query) ||
-        c.numContrato.contains(query)));
-
-    // Filtra Legislações
-    _legislacoesResultados.addAll(cache.legislacoes.where((l) =>
-        l.descAssunto.toLowerCase().contains(query) ||
-        l.numLegislacao.contains(query)));
+    _licitacoesResultados.addAll(cache.licitacoes.where((l) => l.descObjeto.toLowerCase().contains(query) || l.numLicitacao.contains(query)));
+    _contratosResultados.addAll(cache.contratos.where((c) => c.descObjeto.toLowerCase().contains(query) || c.descForn.toLowerCase().contains(query) || c.numContrato.contains(query)));
+    _legislacoesResultados.addAll(cache.legislacoes.where((l) => l.descAssunto.toLowerCase().contains(query) || l.numLegislacao.contains(query)));
     
-    // Filtra Bairros
-    final bairros = bairrosData.entries
-        .map((entry) => Bairro.fromJson(entry.key, entry.value))
-        .where((b) => b.nome.toLowerCase().contains(query))
-        .toList();
+    final bairros = bairrosData.entries.map((entry) => Bairro.fromJson(entry.key, entry.value)).where((b) => b.nome.toLowerCase().contains(query)).toList();
     _bairrosResultados.addAll(bairros);
   }
 
   @override
   Widget build(BuildContext context) {
-    final bool hasResults = _licitacoesResultados.isNotEmpty ||
-        _contratosResultados.isNotEmpty ||
-        _legislacoesResultados.isNotEmpty ||
-        _bairrosResultados.isNotEmpty;
+    final bool hasResults = _licitacoesResultados.isNotEmpty || _contratosResultados.isNotEmpty || _legislacoesResultados.isNotEmpty || _bairrosResultados.isNotEmpty;
 
     return Scaffold(
       appBar: AppBar(
         title: Text('Resultados para "${widget.query}"'),
       ),
       body: !hasResults
-          ? const Center(
-              child: Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Text('Nenhum resultado encontrado.', style: TextStyle(fontSize: 18)),
-              ),
+          ? EmptyStateWidget(
+              icon: Icons.search_off,
+              title: 'Nenhum Resultado',
+              message: 'Não encontramos nada para "${widget.query}".\nTente usar outros termos.',
             )
           : ListView(
               padding: const EdgeInsets.all(8),
               children: [
-                if (_bairrosResultados.isNotEmpty)
-                  _buildSectionHeader(context, 'Coleta', _bairrosResultados.length),
+                if (_bairrosResultados.isNotEmpty) _buildSectionHeader(context, 'Coleta', _bairrosResultados.length),
                 ..._bairrosResultados.map((item) => Card(
                       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       child: ListTile(
@@ -94,14 +74,11 @@ class _PesquisaGlobalTelaState extends State<PesquisaGlobalTela> {
                         onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => BairroDetailScreen(bairro: item))),
                       ),
                     )),
-                if (_licitacoesResultados.isNotEmpty)
-                  _buildSectionHeader(context, 'Licitações', _licitacoesResultados.length),
+                if (_licitacoesResultados.isNotEmpty) _buildSectionHeader(context, 'Licitações', _licitacoesResultados.length),
                 ..._licitacoesResultados.map((item) => LicitacaoCardWidget(licitacao: item, aoTocar: () => Navigator.push(context, MaterialPageRoute(builder: (_) => LicitacaoDetalheTela(licitacao: item))))),
-                if (_contratosResultados.isNotEmpty)
-                  _buildSectionHeader(context, 'Contratos', _contratosResultados.length),
+                if (_contratosResultados.isNotEmpty) _buildSectionHeader(context, 'Contratos', _contratosResultados.length),
                 ..._contratosResultados.map((item) => ContratoCardWidget(contrato: item, aoTocar: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ContratoDetalheTela(contrato: item))))),
-                if (_legislacoesResultados.isNotEmpty)
-                  _buildSectionHeader(context, 'Legislações', _legislacoesResultados.length),
+                if (_legislacoesResultados.isNotEmpty) _buildSectionHeader(context, 'Legislações', _legislacoesResultados.length),
                 ..._legislacoesResultados.map((item) => LegislacaoCardWidget(legislacao: item, aoTocar: () => Navigator.push(context, MaterialPageRoute(builder: (_) => LegislacaoDetalheTela(legislacao: item))))),
               ],
             ),

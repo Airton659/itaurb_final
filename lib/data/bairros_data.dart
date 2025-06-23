@@ -24,15 +24,15 @@ final Map<String, Map<String, List<Map<String, String>>>> bairrosData = {
   },
   'ABÓBORAS': {
     'Orgânica': [
-      {'dia': 'Segunda', 'horario': '08:00'},
+      {'dia': 'Terça', 'horario': '12:10'},
       {'dia': 'Quarta', 'horario': '08:00'},
       {'dia': 'Sexta', 'horario': '08:00'}
     ],
     'Seletiva': [
-      {'dia': 'Segunda', 'horario': '07:30'}
+      {'dia': 'Terça', 'horario': '13:10'}
     ],
     'Apoio': [
-      {'dia': 'Terça', 'horario': '07:30'}
+      {'dia': 'Terça', 'horario': '14:10'}
     ]
   },
   'ÁGUA FRESCA': {

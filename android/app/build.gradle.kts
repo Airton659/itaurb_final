@@ -19,26 +19,33 @@ android {
     compileSdk = 35
 
     compileOptions {
-        // --- ADICIONE ESTA LINHA ---
         isCoreLibraryDesugaringEnabled = true
-
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        // Alinhando as versões do Java
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
 
+    // --- CORREÇÃO APLICADA AQUI ---
     kotlinOptions {
-        jvmTarget = "1.8"
+        // Alinhando a versão do Kotlin com a do Java
+        jvmTarget = JavaVersion.VERSION_11.toString()
+    }
+
+    sourceSets {
+        getByName("main") {
+            java.srcDirs("src/main/kotlin")
+        }
     }
 
     defaultConfig {
         applicationId = "com.example.itaurb_transparente"
-        minSdk = 21 
-        targetSdk = flutter.targetSdkVersion
+        minSdk = 23 // Versão mínima exigida pelo awesome_notifications
+        targetSdk = 35
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        multiDexEnabled = true // Habilita o MultiDex
     }
     
-    // ... o resto do arquivo (signingConfigs, buildTypes) continua igual ...
     signingConfigs {
         create("release") {
             if (keystorePropertiesFile.exists()) {
@@ -57,11 +64,11 @@ android {
     }
 }
 
-// --- ADICIONE ESTE BLOCO NO FINAL DO ARQUIVO ---
-dependencies {
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
-}
-
 flutter {
     source = "../.."
+}
+
+dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+    implementation("androidx.multidex:multidex:2.0.1")
 }

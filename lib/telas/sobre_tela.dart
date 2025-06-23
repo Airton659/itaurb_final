@@ -1,5 +1,7 @@
 // lib/telas/sobre_tela.dart
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:itaurb_transparente/providers/theme_provider.dart';
 import 'package:itaurb_transparente/telas/onboarding_tela.dart';
 import 'package:provider/provider.dart';
@@ -9,7 +11,6 @@ import 'package:url_launcher/url_launcher.dart';
 class SobreTela extends StatelessWidget {
   const SobreTela({super.key});
 
-  // Função auxiliar para abrir URLs
   Future<void> _launchUrl(String url) async {
     final Uri uri = Uri.parse(url);
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
@@ -17,19 +18,36 @@ class SobreTela extends StatelessWidget {
     }
   }
 
-  // --- NOVA FUNÇÃO PARA RESETAR E VER O ONBOARDING ---
   void _resetAndShowOnboarding(BuildContext context) async {
-    // 1. Acessa o SharedPreferences e remove a flag que "lembra" que o onboarding foi visto.
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('hasSeenOnboarding');
-
-    // 2. Navega para a tela de Onboarding, substituindo a tela atual (Sobre)
-    // para que o fluxo de navegação fique correto após a conclusão.
     if (context.mounted) {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const OnboardingTela()),
       );
     }
+  }
+
+  void _scheduleTestNotification(BuildContext context) {
+    // --- CORREÇÃO APLICADA AQUI ---
+    // Usando um método de agendamento diferente e mais robusto que evita o erro de tipo.
+    // Ele agenda para uma data e hora exatas: agora + 10 segundos.
+    final DateTime scheduledDate = DateTime.now().add(const Duration(seconds: 10));
+
+    AwesomeNotifications().createNotification(
+      content: NotificationContent(
+        id: 99, // Um ID de teste
+        channelKey: 'coleta_notification_channel',
+        title: '🔔 Teste de Notificação 🔔',
+        body: 'Se você está vendo isso, as notificações estão funcionando!',
+        notificationLayout: NotificationLayout.Default,
+      ),
+      schedule: NotificationCalendar.fromDate(date: scheduledDate),
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Notificação de teste agendada para daqui a 10 segundos.')),
+    );
   }
 
   @override
@@ -71,12 +89,10 @@ class SobreTela extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 16),
             ),
-            const SizedBox(height: 24),
-            const Divider(),
+            const Divider(height: 32),
 
-            // Seletor de Tema
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -86,21 +102,9 @@ class SobreTela extends StatelessWidget {
                     builder: (context, themeProvider, child) {
                       return SegmentedButton<ThemeMode>(
                         segments: const <ButtonSegment<ThemeMode>>[
-                          ButtonSegment<ThemeMode>(
-                            value: ThemeMode.system,
-                            label: Text('Sistema'),
-                            icon: Icon(Icons.brightness_auto),
-                          ),
-                          ButtonSegment<ThemeMode>(
-                            value: ThemeMode.light,
-                            label: Text('Claro'),
-                            icon: Icon(Icons.wb_sunny),
-                          ),
-                          ButtonSegment<ThemeMode>(
-                            value: ThemeMode.dark,
-                            label: Text('Escuro'),
-                            icon: Icon(Icons.nightlight_round),
-                          ),
+                          ButtonSegment<ThemeMode>(value: ThemeMode.system, label: Text('Sistema'), icon: Icon(Icons.brightness_auto)),
+                          ButtonSegment<ThemeMode>(value: ThemeMode.light, label: Text('Claro'), icon: Icon(Icons.wb_sunny)),
+                          ButtonSegment<ThemeMode>(value: ThemeMode.dark, label: Text('Escuro'), icon: Icon(Icons.nightlight_round)),
                         ],
                         selected: <ThemeMode>{themeProvider.themeMode},
                         onSelectionChanged: (Set<ThemeMode> newSelection) {
@@ -113,8 +117,8 @@ class SobreTela extends StatelessWidget {
               ),
             ),
 
-            const Divider(),
-
+            const Divider(height: 32),
+            
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.info_outline),
@@ -132,13 +136,24 @@ class SobreTela extends StatelessWidget {
             ),
 
             const SizedBox(height: 24),
-            // --- BOTÃO ADICIONADO AQUI ---
+            
             OutlinedButton.icon(
               icon: const Icon(Icons.slideshow_outlined),
               label: const Text('Ver Apresentação Inicial'),
               onPressed: () => _resetAndShowOnboarding(context),
               style: OutlinedButton.styleFrom(
                 foregroundColor: theme.textTheme.bodySmall?.color,
+                side: BorderSide(color: theme.dividerColor),
+              ),
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              icon: const Icon(Icons.notifications_active_outlined),
+              label: const Text('Testar Notificação (em 10s)'),
+              onPressed: () => _scheduleTestNotification(context),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: theme.textTheme.bodySmall?.color,
+                side: BorderSide(color: theme.dividerColor),
               ),
             ),
           ],

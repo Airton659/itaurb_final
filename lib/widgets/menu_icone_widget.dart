@@ -1,3 +1,4 @@
+// lib/widgets/menu_icone_widget.dart
 import 'package:flutter/material.dart';
 
 class MenuIconeWidget extends StatelessWidget {
@@ -14,11 +15,11 @@ class MenuIconeWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Usando as cores e fontes do tema global
     final theme = Theme.of(context);
+
     return Card(
       elevation: 2.0,
-      clipBehavior: Clip.antiAlias, // Garante que o InkWell respeite as bordas arredondadas
+      clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
       child: InkWell(
         onTap: aoTocar,
@@ -28,12 +29,24 @@ class MenuIconeWidget extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Icon(icone, size: 40, color: theme.primaryColor), // Usa a cor primária do tema
+              Icon(icone, size: 40, color: theme.primaryColor),
               const SizedBox(height: 8),
-              Text(
-                texto,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodySmall, // Usa o estilo de texto do tema
+              // Garante que a área do texto tenha uma altura consistente
+              SizedBox(
+                height: 32, 
+                child: Center(
+                  // --- NOVA LÓGICA APLICADA AQUI ---
+                  // O FittedBox irá encolher o texto se ele for muito grande
+                  // para o espaço disponível, mantendo-o em uma única linha.
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      texto,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ),
+                ),
               ),
             ],
           ),

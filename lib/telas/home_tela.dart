@@ -1,17 +1,18 @@
 // lib/telas/home_tela.dart
 import 'package:flutter/material.dart';
+import 'package:itaurb_transparente/services/data_cache_service.dart';
 import 'package:itaurb_transparente/telas/coleta_tela.dart';
 import 'package:itaurb_transparente/telas/contato_tela.dart';
 import 'package:itaurb_transparente/telas/contratos_tela.dart';
+import 'package:itaurb_transparente/telas/guia_coleta_seletiva_tela.dart';
 import 'package:itaurb_transparente/telas/legislacoes_tela.dart';
 import 'package:itaurb_transparente/telas/licitacoes_tela.dart';
-import 'package:itaurb_transparente/telas/pesquisa_global_tela.dart'; // Importe a nova tela
+import 'package:itaurb_transparente/telas/pesquisa_global_tela.dart';
 import 'package:itaurb_transparente/telas/processos_seletivos_tela.dart';
 import 'package:itaurb_transparente/telas/servidores_tela.dart';
 import 'package:itaurb_transparente/telas/sobre_tela.dart';
 import '../widgets/menu_icone_widget.dart';
 
-// Convertemos para StatefulWidget para gerenciar o controller da pesquisa
 class HomeTela extends StatefulWidget {
   const HomeTela({super.key});
 
@@ -20,18 +21,58 @@ class HomeTela extends StatefulWidget {
 }
 
 class _HomeTelaState extends State<HomeTela> {
-  // Controller para capturar o texto da pesquisa
   final TextEditingController _searchController = TextEditingController();
+  String _lastSyncTime = "...";
+  bool _isSyncing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLastSyncTime();
+  }
 
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
   }
-  
+
+  Future<void> _loadLastSyncTime() async {
+    final time = await DataCacheService.instance.getLastSyncTime();
+    if(mounted) {
+      setState(() {
+        _lastSyncTime = time;
+      });
+    }
+  }
+
+  Future<void> _forceSync() async {
+    if(mounted) {
+      setState(() {
+        _isSyncing = true;
+      });
+    }
+    
+    DataCacheService.instance.isInitialized = false;
+    await DataCacheService.instance.initialize();
+    
+    await _loadLastSyncTime();
+
+    if(mounted) {
+      setState(() {
+        _isSyncing = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Dados atualizados com sucesso!'),
+          backgroundColor: Theme.of(context).colorScheme.primary,
+        ),
+      );
+    }
+  }
+
   void _onSearchSubmitted(String query) {
     if (query.trim().isNotEmpty) {
-      // Navega para a tela de resultados da pesquisa
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -45,130 +86,111 @@ class _HomeTelaState extends State<HomeTela> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                // --- ALTERAÇÃO APLICADA AQUI ---
+                // Adicionamos a física de rolagem para remover o efeito "elástico".
+                physics: const ClampingScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Image.asset(
-                      'assets/images/logo_itaurb.png',
-                      width: 80,
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      // --- CAMPO DE PESQUISA AGORA FUNCIONAL ---
-                      child: TextField(
-                        controller: _searchController,
-                        decoration: InputDecoration(
-                          hintText: 'Pesquisar em Licitações...',
-                          prefixIcon: const Icon(Icons.search),
-                          border: const OutlineInputBorder(
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(25.0)),
-                            borderSide: BorderSide.none,
-                          ),
-                          filled: true,
-                          fillColor: Theme.of(context).colorScheme.surfaceVariant,
-                          contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                    TextField(
+                      controller: _searchController,
+                      decoration: InputDecoration(
+                        hintText: 'Pesquisar...',
+                        prefixIcon: const Icon(Icons.search),
+                        border: const OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(25.0)),
+                          borderSide: BorderSide.none,
                         ),
-                        // Ação ao pressionar 'enter' ou o botão de busca no teclado
-                        onSubmitted: _onSearchSubmitted,
+                        filled: true,
+                        fillColor: Theme.of(context).colorScheme.surfaceVariant,
+                        contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                      ),
+                      onSubmitted: _onSearchSubmitted,
+                    ),
+                    const SizedBox(height: 24),
+
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(16.0),
+                      child: Image.asset(
+                        'assets/images/banner_itaurb.jpg',
+                        height: 150,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
                       ),
                     ),
+                    const SizedBox(height: 24),
+
+                    GridView.count(
+                      crossAxisCount: 3,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10,
+                      children: [
+                        MenuIconeWidget(icone: Icons.gavel, texto: 'Licitações', aoTocar: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const LicitacoesPage()))),
+                        MenuIconeWidget(icone: Icons.recycling, texto: 'Coleta\nno bairro', aoTocar: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ColetaTela()))),
+                        MenuIconeWidget(icone: Icons.people_outline, texto: 'Servidores', aoTocar: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ServidoresTela()))),
+                        MenuIconeWidget(icone: Icons.description, texto: 'Contratos', aoTocar: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ContratosTela()))),
+                        MenuIconeWidget(icone: Icons.work_outline, texto: 'Concursos', aoTocar: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ProcessosSeletivosTela()))),
+                        MenuIconeWidget(icone: Icons.balance_outlined, texto: 'Legislação', aoTocar: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const LegislacoesTela()))),
+                        MenuIconeWidget(icone: Icons.compost_rounded, texto: 'Guia', aoTocar: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const GuiaColetaSeletivaTela()))),
+                        MenuIconeWidget(icone: Icons.contact_phone, texto: 'Contato', aoTocar: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ContatoTela()))),
+                        MenuIconeWidget(icone: Icons.info_outline, texto: 'Sobre', aoTocar: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const SobreTela()))),
+                      ],
+                    ),
+                    
+                    const SizedBox(height: 24), 
                   ],
                 ),
-                const SizedBox(height: 24),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(16.0),
-                  child: Image.asset(
-                    'assets/images/banner_itaurb.jpg',
-                    height: 150,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                GridView.count(
-                  crossAxisCount: 3,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                  children: [
-                    MenuIconeWidget(
-                      icone: Icons.gavel,
-                      texto: 'Licitações',
-                      aoTocar: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const LicitacoesPage())),
-                    ),
-                    MenuIconeWidget(
-                      icone: Icons.recycling,
-                      texto: 'Coleta',
-                      aoTocar: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const ColetaTela())),
-                    ),
-                    MenuIconeWidget(
-                      icone: Icons.people_outline,
-                      texto: 'Servidores',
-                      aoTocar: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const ServidoresTela())),
-                    ),
-                    MenuIconeWidget(
-                      icone: Icons.description,
-                      texto: 'Contratos',
-                      aoTocar: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const ContratosTela())),
-                    ),
-                    MenuIconeWidget(
-                      icone: Icons.work_outline,
-                      texto: 'Concursos',
-                      aoTocar: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  const ProcessosSeletivosTela())),
-                    ),
-                    MenuIconeWidget(
-                      icone: Icons.balance_outlined,
-                      texto: 'Legislação',
-                      aoTocar: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const LegislacoesTela())),
-                    ),
-                    MenuIconeWidget(
-                      icone: Icons.contact_phone,
-                      texto: 'Contato',
-                      aoTocar: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const ContatoTela())),
-                    ),
-                    MenuIconeWidget(
-                      icone: Icons.info_outline,
-                      texto: 'Sobre',
-                      aoTocar: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const SobreTela())),
-                    ),
-                  ],
-                )
-              ],
+              ),
             ),
-          ),
+            
+            // Rodapé Fixo
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              child: FractionallySizedBox(
+                widthFactor: 0.7,
+                child: Image.asset(
+                  'assets/images/logo_itaurb2.png',
+                ),
+              ),
+            ),
+
+            _isSyncing 
+              ? const Padding(
+                  padding: EdgeInsets.only(bottom: 12.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2.0)),
+                      SizedBox(width: 12),
+                      Text("Atualizando dados..."),
+                    ],
+                  ),
+                )
+              : Padding(
+                padding: const EdgeInsets.only(bottom: 4.0),
+                child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Dados atualizados em: $_lastSyncTime',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.refresh, size: 20),
+                        onPressed: _forceSync,
+                        visualDensity: VisualDensity.compact,
+                      ),
+                    ],
+                  ),
+              ),
+          ],
         ),
       ),
     );

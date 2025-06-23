@@ -2,7 +2,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:intl/intl.dart'; // Importe para formatação de data
+import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Importe o SharedPreferences
 import '../models/contrato_model.dart';
 import '../models/legislacao_model.dart';
 import '../models/licitacao_model.dart';
@@ -16,39 +17,57 @@ class DataCacheService {
   List<Legislacao> legislacoes = [];
   
   bool isInitialized = false;
+  static const String lastSyncKey = 'last_sync_timestamp'; // Chave para salvar a data
 
   Future<void> initialize() async {
     if (isInitialized) return;
-
     debugPrint("Iniciando carregamento de dados em memória (sequencial)...");
     
-    final currentYear = DateTime.now().year;
-    final previousYear = currentYear - 1;
+    final currentYear = DateTime.now().year.toString();
+    final previousYear = (DateTime.now().year - 1).toString();
 
-    // Busca Licitações de 2 anos
-    final licitacoesAnoAtual = await _fetchLicitacoes(currentYear.toString());
-    final licitacoesAnoAnterior = await _fetchLicitacoes(previousYear.toString());
+    final licitacoesAnoAtual = await _fetchLicitacoes(currentYear);
+    final licitacoesAnoAnterior = await _fetchLicitacoes(previousYear);
     licitacoes = [...licitacoesAnoAtual, ...licitacoesAnoAnterior];
     debugPrint("-> Licitações carregadas: ${licitacoes.length}");
 
-    // Busca Contratos (agora corrigido para usar intervalo de datas)
     contratos = await _fetchContratos();
     debugPrint("-> Contratos carregados: ${contratos.length}");
     
-    // Busca Legislações de 2 anos
-    final legislacoesAnoAtual = await _fetchLegislacoes(currentYear.toString());
+    final legislacoesAnoAtual = await _fetchLegislacoes(currentYear);
     final legislacoesAnoAnterior = await _fetchLegislacoes(previousYear.toString());
     legislacoes = [...legislacoesAnoAtual, ...legislacoesAnoAnterior];
     debugPrint("-> Legislações carregadas: ${legislacoes.length}");
     
     isInitialized = true;
+    
+    // --- ALTERAÇÃO AQUI ---
+    // Salva o timestamp da sincronização bem-sucedida
+    await _saveLastSyncTimestamp();
+    
     debugPrint("Carregamento em memória concluído.");
   }
 
+  // --- NOVOS MÉTODOS ---
+  Future<void> _saveLastSyncTimestamp() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(lastSyncKey, DateTime.now().toIso8601String());
+  }
+
+  Future<String> getLastSyncTime() async {
+    final prefs = await SharedPreferences.getInstance();
+    final timestamp = prefs.getString(lastSyncKey);
+    if (timestamp == null) {
+      return "Nunca";
+    }
+    final dateTime = DateTime.parse(timestamp);
+    // Formata a data para um formato amigável
+    return DateFormat('dd/MM/yyyy HH:mm').format(dateTime);
+  }
+  // --- FIM DOS NOVOS MÉTODOS ---
+
   Future<List<Licitacao>> _fetchLicitacoes(String year) async {
-    final uri = Uri.parse('https://dadosabertos-portalfacil.azurewebsites.net/api/licitacoes').replace(queryParameters: {
-      'type': 'json', 'idCliente': '465', 'pageSize': '100', 'numAno': year, 'page': '1',
-    });
+    final uri = Uri.parse('https://dadosabertos-portalfacil.azurewebsites.net/api/licitacoes').replace(queryParameters: {'type': 'json', 'idCliente': '465', 'pageSize': '100', 'numAno': year, 'page': '1'});
     try {
       final response = await http.get(uri);
       if (response.statusCode == 200) return (json.decode(response.body) as List).map((data) => Licitacao.fromJson(data)).toList();
@@ -56,16 +75,11 @@ class DataCacheService {
     return [];
   }
 
-  // CORRIGIDO: Este método agora usa um intervalo de datas fixo e amplo
   Future<List<Contrato>> _fetchContratos() async {
     final now = DateTime.now();
-    // Busca desde o início do ano passado até o fim do ano corrente
     final dtInicio = DateFormat('dd/MM/yyyy').format(DateTime(now.year - 1, 1, 1));
     final dtFim = DateFormat('dd/MM/yyyy').format(DateTime(now.year, 12, 31));
-
-    final uri = Uri.parse('https://dadosabertos-portalfacil.azurewebsites.net/api/contratos').replace(queryParameters: {
-      'type': 'json', 'idCliente': '465', 'pageSize': '100', 'dtInicio': dtInicio, 'dtFim': dtFim, 'page': '1',
-    });
+    final uri = Uri.parse('https://dadosabertos-portalfacil.azurewebsites.net/api/contratos').replace(queryParameters: {'type': 'json', 'idCliente': '465', 'pageSize': '100', 'dtInicio': dtInicio, 'dtFim': dtFim, 'page': '1'});
     try {
       final response = await http.get(uri);
       if (response.statusCode == 200) return (json.decode(response.body) as List).map((data) => Contrato.fromJson(data)).toList();
@@ -74,9 +88,7 @@ class DataCacheService {
   }
 
   Future<List<Legislacao>> _fetchLegislacoes(String year) async {
-    final uri = Uri.parse('https://dadosabertos-portalfacil.azurewebsites.net/api/legislacoes').replace(queryParameters: {
-      'type': 'json', 'idCliente': '465', 'pageSize': '100', 'numAno': year, 'page': '1',
-    });
+    final uri = Uri.parse('https://dadosabertos-portalfacil.azurewebsites.net/api/legislacoes').replace(queryParameters: {'type': 'json', 'idCliente': '465', 'pageSize': '100', 'numAno': year, 'page': '1'});
     try {
       final response = await http.get(uri);
       if (response.statusCode == 200) return (json.decode(response.body) as List).map((data) => Legislacao.fromJson(data)).toList();

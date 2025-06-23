@@ -1,46 +1,42 @@
 // lib/services/notification_service.dart
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:timezone/data/latest_all.dart' as tz;
-import 'package:timezone/timezone.dart' as tz;
+import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:flutter/material.dart';
 import '../models/bairro.dart';
 import '../models/coleta.dart';
 
 class NotificationService {
-  final FlutterLocalNotificationsPlugin _notificationsPlugin = FlutterLocalNotificationsPlugin();
-
   static final NotificationService _instance = NotificationService._internal();
-  factory NotificationService() {
-    return _instance;
-  }
+  factory NotificationService() => _instance;
   NotificationService._internal();
 
   Future<void> init() async {
-    tz.initializeTimeZones();
-    tz.setLocalLocation(tz.getLocation('America/Sao_Paulo'));
-
-    const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
-
-    const InitializationSettings initializationSettings =
-        InitializationSettings(android: initializationSettingsAndroid);
-
-    await _notificationsPlugin.initialize(initializationSettings);
+    await AwesomeNotifications().initialize(
+      'resource://drawable/res_notification_app_icon',
+      [
+        NotificationChannel(
+          channelKey: 'coleta_notification_channel',
+          channelName: 'Notificações de Coleta',
+          channelDescription: 'Alertas sobre os dias de coleta de lixo no seu bairro.',
+          defaultColor: const Color(0xFF5C9DD5),
+          ledColor: Colors.white,
+          importance: NotificationImportance.High,
+          channelShowBadge: true,
+        )
+      ],
+      debug: true,
+    );
   }
 
   Future<bool> requestPermissions() async {
-    final androidPlugin = _notificationsPlugin.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
-    
-    if (androidPlugin != null) {
-      final bool? notificationPermission = await androidPlugin.requestNotificationsPermission();
-      final bool? exactAlarmPermission = await androidPlugin.requestExactAlarmsPermission();
-      return (notificationPermission ?? false) && (exactAlarmPermission ?? false);
+    bool isAllowed = await AwesomeNotifications().isNotificationAllowed();
+    if (!isAllowed) {
+      isAllowed = await AwesomeNotifications().requestPermissionToSendNotifications();
     }
-    return false;
+    return isAllowed;
   }
 
   Future<void> agendarNotificacoesBairro(Bairro bairro) async {
-    await cancelarNotificacoesBairro(bairro);
+    await cancelarNotificacoesBairro(bairro); // Garante que não haja agendamentos duplicados
 
     for (var tipoColeta in bairro.coletas.keys) {
       for (var coleta in bairro.coletas[tipoColeta]!) {
@@ -48,69 +44,56 @@ class NotificationService {
       }
     }
   }
-  
-  Future<void> cancelarNotificacoesBairro(Bairro bairro) async {
-    final List<PendingNotificationRequest> pendingRequests =
-        await _notificationsPlugin.pendingNotificationRequests();
-    for (var request in pendingRequests) {
-      if (request.payload != null && request.payload!.startsWith(bairro.nome)) {
-        await _notificationsPlugin.cancel(request.id);
-      }
-    }
-  }
 
   Future<void> _agendarNotificacaoRecorrente(String bairro, String tipoColeta, Coleta coleta) async {
-    final int diaDaSemana = _converterDiaParaNumero(coleta.dia);
-    final int hora = int.parse(coleta.horario.split(':')[0]);
-    final int minuto = int.parse(coleta.horario.split(':')[1]);
+    try {
+      int diaSemana = _converterDiaParaNumero(coleta.dia);
+      List<String> horario = coleta.horario.split(':');
+      int hora = int.parse(horario[0]);
+      int minuto = int.parse(horario[1]);
 
-    final tz.TZDateTime scheduledDate = _proximoDiaDaSemana(diaDaSemana, hora, minuto);
+      int diaSemanaNotificacao = (diaSemana - 1) < 1 ? 7 : (diaSemana - 1);
+      int notificationId = _gerarIdUnico(bairro, tipoColeta, coleta.dia);
 
-    await _notificationsPlugin.zonedSchedule(
-      _gerarIdUnico(bairro, tipoColeta, coleta.dia),
-      'Coleta de Lixo em Itabira',
-      'A coleta $tipoColeta no bairro $bairro será amanhã. Não se esqueça!',
-      scheduledDate,
-      const NotificationDetails(
-        android: AndroidNotificationDetails(
-          'coleta_lixo_channel',
-          'Notificações de Coleta de Lixo',
-          channelDescription: 'Alertas sobre os dias de coleta de lixo.',
-          importance: Importance.max,
-          priority: Priority.high,
+      await AwesomeNotifications().createNotification(
+        content: NotificationContent(
+          id: notificationId,
+          channelKey: 'coleta_notification_channel',
+          title: 'Lembrete de Coleta de Lixo',
+          body: 'A coleta $tipoColeta no bairro $bairro será amanhã às ${coleta.horario}.',
+          notificationLayout: NotificationLayout.Default,
         ),
-      ),
-      payload: '$bairro-$tipoColeta-${coleta.dia}',
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
-      // --- CORREÇÃO FINAL APLICADA AQUI ---
-      // A constante correta para combinar dia da semana e horário é 'dayOfWeekAndTime'
-      matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
-    );
-  }
-  
-  tz.TZDateTime _proximoDiaDaSemana(int diaDaSemana, int hora, int minuto) {
-    tz.TZDateTime scheduledDate = _proximaData(diaDaSemana, hora, minuto);
-    return scheduledDate.subtract(const Duration(days: 1));
+        schedule: NotificationCalendar(
+          weekday: diaSemanaNotificacao,
+          hour: hora,
+          minute: minuto,
+          second: 0,
+          repeats: true,
+          allowWhileIdle: true,
+        ),
+      );
+      debugPrint("Notificação agendada para $bairro ($tipoColeta) - ID: $notificationId");
+    } catch (e) {
+      debugPrint("Erro ao agendar notificação: $e");
+    }
   }
 
-  tz.TZDateTime _proximaData(int dia, int hora, int minuto) {
-    final tz.TZDateTime agora = tz.TZDateTime.now(tz.local);
-    tz.TZDateTime dataAgendada = tz.TZDateTime(tz.local, agora.year, agora.month, agora.day, hora, minuto);
-
-    if (dataAgendada.weekday == dia && dataAgendada.isBefore(agora)) {
-      dataAgendada = dataAgendada.add(const Duration(days: 7));
-    } else {
-      while (dataAgendada.weekday != dia) {
-        dataAgendada = dataAgendada.add(const Duration(days: 1));
+  Future<void> cancelarNotificacoesBairro(Bairro bairro) async {
+    for (var tipoColeta in bairro.coletas.keys) {
+      for (var coleta in bairro.coletas[tipoColeta]!) {
+        int notificationId = _gerarIdUnico(bairro.nome, tipoColeta, coleta.dia);
+        AwesomeNotifications().cancel(notificationId);
       }
     }
-    return dataAgendada;
+    debugPrint("Notificações para o bairro ${bairro.nome} canceladas.");
   }
 
-  int _gerarIdUnico(String bairro, String tipo, String dia) => (bairro.hashCode ^ tipo.hashCode ^ dia.hashCode) & 0x7FFFFFFF;
+  int _gerarIdUnico(String bairro, String tipo, String dia) {
+    return (bairro.hashCode ^ tipo.hashCode ^ dia.hashCode) & 0x7FFFFFFF;
+  }
 
   int _converterDiaParaNumero(String dia) {
+    // Domingo é 7 no awesome_notifications
     switch (dia.toLowerCase()) {
       case 'domingo': return 7;
       case 'segunda': return 1;
