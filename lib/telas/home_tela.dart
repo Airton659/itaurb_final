@@ -90,8 +90,6 @@ class _HomeTelaState extends State<HomeTela> {
           children: [
             Expanded(
               child: SingleChildScrollView(
-                // --- ALTERAÇÃO APLICADA AQUI ---
-                // Adicionamos a física de rolagem para remover o efeito "elástico".
                 physics: const ClampingScrollPhysics(),
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                 child: Column(
@@ -112,7 +110,8 @@ class _HomeTelaState extends State<HomeTela> {
                       ),
                       onSubmitted: _onSearchSubmitted,
                     ),
-                    const SizedBox(height: 24),
+                    // --- ESPAÇAMENTO REDUZIDO AQUI ---
+                    const SizedBox(height: 20),
 
                     ClipRRect(
                       borderRadius: BorderRadius.circular(16.0),
@@ -123,7 +122,8 @@ class _HomeTelaState extends State<HomeTela> {
                         fit: BoxFit.cover,
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    // --- ESPAÇAMENTO REDUZIDO AQUI ---
+                    const SizedBox(height: 20),
 
                     GridView.count(
                       crossAxisCount: 3,
@@ -144,7 +144,8 @@ class _HomeTelaState extends State<HomeTela> {
                       ],
                     ),
                     
-                    const SizedBox(height: 24), 
+                    // Adiciona um espaço no final para garantir que nada fique colado
+                    const SizedBox(height: 16), 
                   ],
                 ),
               ),
@@ -152,11 +153,14 @@ class _HomeTelaState extends State<HomeTela> {
             
             // Rodapé Fixo
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16.0),
-              child: FractionallySizedBox(
-                widthFactor: 0.7,
-                child: Image.asset(
-                  'assets/images/logo_itaurb2.png',
+              padding: const EdgeInsets.only(top: 8.0, bottom: 16.0), // Padding ajustado
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 60), // Altura máxima da logo
+                child: FractionallySizedBox(
+                  widthFactor: 0.6, // Fator de largura da logo
+                  child: Image.asset(
+                    'assets/images/logo_itaurb2.png',
+                  ),
                 ),
               ),
             ),

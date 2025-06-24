@@ -131,7 +131,7 @@ class SobreTela extends StatelessWidget {
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.code),
               title: const Text('Desenvolvido por'),
-              subtitle: const Text('[Seu nome ou nome da empresa]'),
+              subtitle: const Text('José Airton - Itaurb'),
               onTap: () {},
             ),
 
