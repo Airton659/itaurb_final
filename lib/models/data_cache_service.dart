@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // Importe o SharedPreferences
-import '../models/contrato_model.dart';
-import '../models/legislacao_model.dart';
-import '../models/licitacao_model.dart';
+import 'contrato_model.dart';
+import 'legislacao_model.dart';
+import 'licitacao_model.dart';
 
 class DataCacheService {
   static final DataCacheService instance = DataCacheService._internal();

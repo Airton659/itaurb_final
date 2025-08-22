@@ -1,10 +1,10 @@
 // lib/telas/coleta_tela.dart
 import 'package:flutter/material.dart';
-import 'package:itaurb_transparente/data/bairros_data.dart';
+import 'package:itaurb_transparente/services/bairros_data.dart';
 import 'package:itaurb_transparente/models/bairro.dart';
-import 'package:itaurb_transparente/providers/favorites_provider.dart';
+import 'package:itaurb_transparente/controllers/favorites_provider.dart';
 import 'package:itaurb_transparente/services/notification_service.dart';
-import 'package:itaurb_transparente/telas/bairro_detail_screen.dart';
+import 'package:itaurb_transparente/views/bairro_detail_screen.dart';
 import 'package:provider/provider.dart';
 
 class ColetaTela extends StatefulWidget {

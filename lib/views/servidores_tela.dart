@@ -2,10 +2,10 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:itaurb_transparente/telas/servidor_detalhe_tela.dart';
+import 'package:itaurb_transparente/views/servidor_detalhe_tela.dart';
 import '../models/servidor_model.dart';
-import '../widgets/servidor_card_widget.dart';
-import '../widgets/loading_list_shimmer.dart';
+import 'servidor_card_widget.dart';
+import 'loading_list_shimmer.dart';
 
 class ServidoresTela extends StatefulWidget {
   const ServidoresTela({super.key});

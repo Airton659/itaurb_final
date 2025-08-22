@@ -1,17 +1,17 @@
 // lib/telas/home_tela.dart
 import 'package:flutter/material.dart';
-import 'package:itaurb_transparente/services/data_cache_service.dart';
-import 'package:itaurb_transparente/telas/coleta_tela.dart';
-import 'package:itaurb_transparente/telas/contato_tela.dart';
-import 'package:itaurb_transparente/telas/contratos_tela.dart';
-import 'package:itaurb_transparente/telas/guia_coleta_seletiva_tela.dart';
-import 'package:itaurb_transparente/telas/legislacoes_tela.dart';
-import 'package:itaurb_transparente/telas/licitacoes_tela.dart';
-import 'package:itaurb_transparente/telas/pesquisa_global_tela.dart';
-import 'package:itaurb_transparente/telas/processos_seletivos_tela.dart';
-import 'package:itaurb_transparente/telas/servidores_tela.dart';
-import 'package:itaurb_transparente/telas/sobre_tela.dart';
-import '../widgets/menu_icone_widget.dart';
+import 'package:itaurb_transparente/models/data_cache_service.dart';
+import 'package:itaurb_transparente/views/coleta_tela.dart';
+import 'package:itaurb_transparente/views/contato_tela.dart';
+import 'package:itaurb_transparente/views/contratos_tela.dart';
+import 'package:itaurb_transparente/views/guia_coleta_seletiva_tela.dart';
+import 'package:itaurb_transparente/views/legislacoes_tela.dart';
+import 'package:itaurb_transparente/views/licitacoes_tela.dart';
+import 'package:itaurb_transparente/views/pesquisa_global_tela.dart';
+import 'package:itaurb_transparente/views/processos_seletivos_tela.dart';
+import 'package:itaurb_transparente/views/servidores_tela.dart';
+import 'package:itaurb_transparente/views/sobre_tela.dart';
+import 'menu_icone_widget.dart';
 
 class HomeTela extends StatefulWidget {
   const HomeTela({super.key});

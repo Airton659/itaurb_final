@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:itaurb_transparente/utils/formatters.dart';
+import 'package:itaurb_transparente/services/formatters.dart';
 import '../models/contrato_model.dart';
 
 class ContratoCardWidget extends StatelessWidget {

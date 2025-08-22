@@ -1,11 +1,11 @@
 // lib/telas/legislacoes_tela.dart
 import 'package:flutter/material.dart';
-import 'package:itaurb_transparente/services/data_cache_service.dart';
-import 'package:itaurb_transparente/telas/legislacao_detalhe_tela.dart';
-import 'package:itaurb_transparente/widgets/empty_state_widget.dart';
+import 'package:itaurb_transparente/models/data_cache_service.dart';
+import 'package:itaurb_transparente/views/legislacao_detalhe_tela.dart';
+import 'package:itaurb_transparente/views/empty_state_widget.dart';
 import '../models/legislacao_model.dart';
-import '../widgets/legislacao_card_widget.dart';
-import '../widgets/loading_list_shimmer.dart';
+import 'legislacao_card_widget.dart';
+import 'loading_list_shimmer.dart';
 
 class LegislacoesTela extends StatefulWidget {
   const LegislacoesTela({super.key});

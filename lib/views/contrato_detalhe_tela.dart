@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/contrato_model.dart';
-import '../utils/formatters.dart';
+import '../services/formatters.dart';
 
 class ContratoDetalheTela extends StatefulWidget {
   final Contrato contrato;

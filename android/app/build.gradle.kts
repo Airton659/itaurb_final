@@ -39,7 +39,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.itaurb_transparente"
-        minSdk = 23 // Versão mínima exigida pelo awesome_notifications
+        minSdkVersion(flutter.minSdkVersion as Int) 
         targetSdk = 35
         versionCode = flutter.versionCode
         versionName = flutter.versionName
