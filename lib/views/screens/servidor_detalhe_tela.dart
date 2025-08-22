@@ -1,7 +1,7 @@
 // lib/telas/servidor_detalhe_tela.dart
 import 'package:flutter/material.dart';
 import 'package:itaurb_transparente/utils/formatters.dart';
-import '../models/servidor_model.dart';
+import '../../models/servidor_model.dart';
 
 class ServidorDetalheTela extends StatelessWidget {
   final Servidor servidor;

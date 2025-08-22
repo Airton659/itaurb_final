@@ -1,6 +1,6 @@
 // lib/telas/legislacao_detalhe_tela.dart
 import 'package:flutter/material.dart';
-import '../models/legislacao_model.dart';
+import '../../models/legislacao_model.dart';
 
 class LegislacaoDetalheTela extends StatefulWidget {
   final Legislacao legislacao;

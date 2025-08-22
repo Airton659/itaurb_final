@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:itaurb_transparente/models/bairro.dart';
 import 'package:itaurb_transparente/models/coleta.dart';
-import 'package:itaurb_transparente/providers/favorites_provider.dart';
+import 'package:itaurb_transparente/controllers/favorites_provider.dart';
 import 'package:itaurb_transparente/services/notification_service.dart';
 import 'package:provider/provider.dart';
 

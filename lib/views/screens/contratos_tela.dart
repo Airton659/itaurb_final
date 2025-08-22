@@ -1,11 +1,11 @@
 // lib/telas/contratos_tela.dart
 import 'package:flutter/material.dart';
 import 'package:itaurb_transparente/services/data_cache_service.dart';
-import 'package:itaurb_transparente/telas/contrato_detalhe_tela.dart';
-import 'package:itaurb_transparente/widgets/empty_state_widget.dart';
-import '../models/contrato_model.dart';
-import '../widgets/contrato_card_widget.dart';
-import '../widgets/loading_list_shimmer.dart';
+import 'package:itaurb_transparente/views/screens/contrato_detalhe_tela.dart';
+import 'package:itaurb_transparente/vie../views/widgets/empty_state_widget.dart';
+import '../../models/contrato_model.dart';
+import '../views/widgets/contrato_card_widget.dart';
+import '../views/widgets/loading_list_shimmer.dart';
 
 class ContratosTela extends StatefulWidget {
   const ContratosTela({super.key});

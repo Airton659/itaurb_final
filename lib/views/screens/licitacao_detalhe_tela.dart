@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../models/licitacao_model.dart';
-import '../utils/formatters.dart';
+import '../../models/licitacao_model.dart';
+import '../../utils/formatters.dart';
 
 class LicitacaoDetalheTela extends StatefulWidget {
   final Licitacao licitacao;

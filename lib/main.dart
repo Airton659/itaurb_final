@@ -1,14 +1,15 @@
 // lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:itaurb_transparente/providers/favorites_provider.dart';
-import 'package:itaurb_transparente/providers/theme_provider.dart';
+import 'package:itaurb_transparente/controllers/favorites_provider.dart';
+import 'package:itaurb_transparente/controllers/sync_controller.dart';
+import 'package:itaurb_transparente/controllers/theme_provider.dart';
 import 'package:itaurb_transparente/services/data_cache_service.dart';
 import 'package:itaurb_transparente/services/notification_service.dart';
-import 'package:itaurb_transparente/telas/home_tela.dart';
-import 'package:itaurb_transparente/telas/onboarding_tela.dart';
-import 'package:itaurb_transparente/telas/splash_screen.dart';
-import 'package:itaurb_transparente/widgets/empty_state_widget.dart';
+import 'package:itaurb_transparente/views/screens/home_tela.dart';
+import 'package:itaurb_transparente/views/screens/onboarding_tela.dart';
+import 'package:itaurb_transparente/views/screens/splash_screen.dart';
+import 'package:itaurb_transparente/views/widgets/empty_state_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -33,6 +34,7 @@ class MainApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => FavoritesProvider()),
+        ChangeNotifierProvider(create: (_) => SyncController()),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {

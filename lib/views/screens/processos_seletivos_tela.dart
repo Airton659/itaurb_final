@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:itaurb_transparente/models/processo_seletivo_model.dart';
-import 'package:itaurb_transparente/telas/processo_seletivo_detalhe_tela.dart';
-import 'package:itaurb_transparente/widgets/processo_seletivo_card.dart';
-import '../widgets/loading_list_shimmer.dart'; 
+import 'package:itaurb_transparente/views/screens/processo_seletivo_detalhe_tela.dart';
+import 'package:itaurb_transparente/vie../views/widgets/processo_seletivo_card.dart';
+import '../views/widgets/loading_list_shimmer.dart';
 
 class ProcessosSeletivosTela extends StatefulWidget {
   const ProcessosSeletivosTela({super.key});

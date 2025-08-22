@@ -1,9 +1,9 @@
 // lib/telas/licitacoes_tela.dart
 import 'package:flutter/material.dart';
 import 'package:itaurb_transparente/services/data_cache_service.dart';
-import 'package:itaurb_transparente/telas/licitacao_detalhe_tela.dart';
-import '../models/licitacao_model.dart';
-import '../widgets/licitacao_card_widget.dart';
+import 'package:itaurb_transparente/views/screens/licitacao_detalhe_tela.dart';
+import '../../models/licitacao_model.dart';
+import '../views/widgets/licitacao_card_widget.dart';
 
 class LicitacoesPage extends StatefulWidget {
   const LicitacoesPage({super.key});

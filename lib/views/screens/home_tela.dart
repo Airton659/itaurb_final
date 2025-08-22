@@ -1,17 +1,18 @@
 // lib/telas/home_tela.dart
 import 'package:flutter/material.dart';
-import 'package:itaurb_transparente/services/data_cache_service.dart';
-import 'package:itaurb_transparente/telas/coleta_tela.dart';
-import 'package:itaurb_transparente/telas/contato_tela.dart';
-import 'package:itaurb_transparente/telas/contratos_tela.dart';
-import 'package:itaurb_transparente/telas/guia_coleta_seletiva_tela.dart';
-import 'package:itaurb_transparente/telas/legislacoes_tela.dart';
-import 'package:itaurb_transparente/telas/licitacoes_tela.dart';
-import 'package:itaurb_transparente/telas/pesquisa_global_tela.dart';
-import 'package:itaurb_transparente/telas/processos_seletivos_tela.dart';
-import 'package:itaurb_transparente/telas/servidores_tela.dart';
-import 'package:itaurb_transparente/telas/sobre_tela.dart';
-import '../widgets/menu_icone_widget.dart';
+import 'package:itaurb_transparente/controllers/sync_controller.dart';
+import 'package:itaurb_transparente/views/screens/coleta_tela.dart';
+import 'package:itaurb_transparente/views/screens/contato_tela.dart';
+import 'package:itaurb_transparente/views/screens/contratos_tela.dart';
+import 'package:itaurb_transparente/views/screens/guia_coleta_seletiva_tela.dart';
+import 'package:itaurb_transparente/views/screens/legislacoes_tela.dart';
+import 'package:itaurb_transparente/views/screens/licitacoes_tela.dart';
+import 'package:itaurb_transparente/views/screens/pesquisa_global_tela.dart';
+import 'package:itaurb_transparente/views/screens/processos_seletivos_tela.dart';
+import 'package:itaurb_transparente/views/screens/servidores_tela.dart';
+import 'package:itaurb_transparente/views/screens/sobre_tela.dart';
+import 'package:provider/provider.dart';
+import '../views/widgets/menu_icone_widget.dart';
 
 class HomeTela extends StatefulWidget {
   const HomeTela({super.key});
@@ -22,53 +23,11 @@ class HomeTela extends StatefulWidget {
 
 class _HomeTelaState extends State<HomeTela> {
   final TextEditingController _searchController = TextEditingController();
-  String _lastSyncTime = "...";
-  bool _isSyncing = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadLastSyncTime();
-  }
 
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
-  }
-
-  Future<void> _loadLastSyncTime() async {
-    final time = await DataCacheService.instance.getLastSyncTime();
-    if(mounted) {
-      setState(() {
-        _lastSyncTime = time;
-      });
-    }
-  }
-
-  Future<void> _forceSync() async {
-    if(mounted) {
-      setState(() {
-        _isSyncing = true;
-      });
-    }
-    
-    DataCacheService.instance.isInitialized = false;
-    await DataCacheService.instance.initialize();
-    
-    await _loadLastSyncTime();
-
-    if(mounted) {
-      setState(() {
-        _isSyncing = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Dados atualizados com sucesso!'),
-          backgroundColor: Theme.of(context).colorScheme.primary,
-        ),
-      );
-    }
   }
 
   void _onSearchSubmitted(String query) {
@@ -165,35 +124,49 @@ class _HomeTelaState extends State<HomeTela> {
               ),
             ),
 
-            _isSyncing 
-              ? const Padding(
-                  padding: EdgeInsets.only(bottom: 12.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2.0)),
-                      SizedBox(width: 12),
-                      Text("Atualizando dados..."),
-                    ],
-                  ),
-                )
-              : Padding(
-                padding: const EdgeInsets.only(bottom: 4.0),
-                child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Dados atualizados em: $_lastSyncTime',
-                        style: Theme.of(context).textTheme.bodySmall,
+            Consumer<SyncController>(
+              builder: (context, controller, child) {
+                return controller.isSyncing
+                  ? const Padding(
+                      padding: EdgeInsets.only(bottom: 12.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2.0)),
+                          SizedBox(width: 12),
+                          Text("Atualizando dados..."),
+                        ],
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.refresh, size: 20),
-                        onPressed: _forceSync,
-                        visualDensity: VisualDensity.compact,
+                    )
+                  : Padding(
+                      padding: const EdgeInsets.only(bottom: 4.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Dados atualizados em: ${controller.lastSyncTime}',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.refresh, size: 20),
+                            onPressed: () async {
+                              await controller.forceSync();
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: const Text('Dados atualizados com sucesso!'),
+                                    backgroundColor: Theme.of(context).colorScheme.primary,
+                                  ),
+                                );
+                              }
+                            },
+                            visualDensity: VisualDensity.compact,
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-              ),
+                    );
+              },
+            ),
           ],
         ),
       ),

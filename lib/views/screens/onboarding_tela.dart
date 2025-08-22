@@ -1,6 +1,6 @@
 // lib/telas/onboarding_tela.dart
 import 'package:flutter/material.dart';
-import 'package:itaurb_transparente/telas/home_tela.dart';
+import 'package:itaurb_transparente/views/screens/home_tela.dart';
 import 'package:introduction_screen/introduction_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
