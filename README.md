@@ -206,12 +206,8 @@ Se utilizar notificações, confirme permissões no `AndroidManifest.xml` confor
 ## 👤 Autoria
 
 - **Autor:** José Airton (Itaurb) — disciplina/projeto acadêmico.
-- **Curso/Disciplina:** (preencher)
-- **Professor:** (preencher)
+- **Curso/Disciplina:** Projetos III
+- **Professor:** Edson Wisses de Figueiredo
 
 ---
-
-## 📄 Licença
-
-Defina a licença do projeto (ex.: MIT).
 
